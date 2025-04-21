@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Almanca Taşıma Araçları Quiz Oyunu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f4f8;
+      padding: 20px;
+      text-align: center;
+    }
+    .question {
+      font-size: 1.5rem;
+      margin: 20px 0;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .option {
+      padding: 10px 20px;
+      background-color: #e0e7ff;
+      border: 2px solid #4f46e5;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .option.correct {
+      background-color: #c8e6c9;
+      border-color: green;
+    }
+    .option.incorrect {
+      background-color: #ffcdd2;
+      border-color: red;
+    }
+    .button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #score, #timer, #level {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin: 10px;
+    }
+    #start-screen, #game-screen {
+      display: none;
+    }
+    .level-button {
+      padding: 10px 15px;
+      margin: 5px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    img {
+      max-width: 100px;
+      max-height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🚍 Almanca Taşıma Araçları Quiz Oyunu</h2>
+
+  <div id="start-screen">
+    <button class="button" onclick="showLevelSelect()">Play</button>
+  </div>
+
+  <div id="level-select" style="display:none">
+    <h3>Bölüm Seç</h3>
+    <div id="level-buttons"></div>
+  </div>
+
+  <div id="game-screen">
+    <div id="timer">Kalan Süre: 90 saniye</div>
+    <div id="level">Bölüm: 1</div>
+    <div id="question-container"></div>
+    <div id="score">Puan: 0</div>
+    <button class="button" onclick="loadNextQuestion()">Sonraki Soru</button>
+  </div>
+
+  <script>
+    const levels = [
+      [
+        { sentence: "Ich fahre ___ dem Auto zur Schule.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Wir gehen ___ Fuß zum Park.", options: ["zu", "mit", "auf", "nach"], answer: "zu" },
+        { sentence: "Er fliegt ___ Berlin.", options: ["nach", "mit", "zu", "auf"], answer: "nach" },
+        { sentence: "Sie fahren ___ dem Bus.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Ich gehe ___ der U-Bahn zur Arbeit.", options: ["mit", "zu", "nach", "auf"], answer: "mit" }
+      ],
+      [
+        { sentence: "Wir fahren ___ dem Fahrrad zur Schule.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Sie fliegen ___ Deutschland.", options: ["nach", "mit", "zu", "auf"], answer: "nach" },
+        { sentence: "Ich gehe ___ Fuß zur Arbeit.", options: ["zu", "nach", "mit", "auf"], answer: "zu" },
+        { sentence: "Er kommt ___ dem Zug.", options: ["mit", "nach", "zu", "auf"], answer: "mit" },
+        { sentence: "Wir gehen ___ der Straße.", options: ["auf", "zu", "mit", "nach"], answer: "auf" }
+      ],
+      [
+        { sentence: "Welches Transportmittel ist das?", image: "car.jpg", options: ["Auto", "Fahrrad", "Flugzeug", "Zug"], answer: "Auto" },
+        { sentence: "Welches Transportmittel ist das?", image: "bus.jpg", options: ["Auto", "Bus", "Fahrrad", "Zug"], answer: "Bus" },
+        { sentence: "Ich fahre ___ dem Zug nach Berlin.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Er geht ___ Fuß zur Arbeit.", options: ["zu", "nach", "mit", "auf"], answer: "zu" },
+        { sentence: "Sie fliegen ___ Paris.", options: ["nach", "mit", "zu", "auf"], answer: "nach" }
+      ],
+      [
+        { sentence: "Welches Transportmittel ist das?", image: "tram.jpg", options: ["Auto", "Tram", "Bus", "U-Bahn"], answer: "Tram" },
+        { sentence: "Welches Transportmittel ist das?", image: "train.jpg", options: ["Zug", "Auto", "Bus", "Flugzeug"], answer: "Zug" },
+        { sentence: "Wir fahren ___ der U-Bahn.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Er geht ___ der Straße.", options: ["auf", "zu", "nach", "mit"], answer: "auf" },
+        { sentence: "Ich fahre ___ dem Flugzeug.", options: ["nach", "mit", "zu", "auf"], answer: "mit" }
+      ],
+      [
+        { sentence: "Welches Transportmittel ist das?", image: "plane.jpg", options: ["Auto", "Flugzeug", "Zug", "Fahrrad"], answer: "Flugzeug" },
+        { sentence: "Welches Transportmittel ist das?", image: "boat.jpg", options: ["Boot", "Zug", "Bus", "Auto"], answer: "Boot" },
+        { sentence: "Ich fahre ___ dem Bus zur Arbeit.", options: ["mit", "zu", "nach", "auf"], answer: "mit" },
+        { sentence: "Sie fahren ___ der Straße.", options: ["auf", "zu", "nach", "mit"], answer: "auf" },
+        { sentence: "Er fährt ___ dem Fahrrad.", options: ["mit", "zu", "auf", "nach"], answer: "mit" }
+      ]
+    ];
+
+    let currentLevel = 0;
+    let currentQuestion = 0;
+    let score = 0;
+    let timeLeft = 90;
+    let timerInterval;
+
+    window.onload = () => {
+      document.getElementById("start-screen").style.display = "block";
+    };
+
+    function showLevelSelect() {
+      document.getElementById("start-screen").style.display = "none";
+      const levelSelect = document.getElementById("level-select");
+      const levelButtonsDiv = document.getElementById("level-buttons");
+      levelButtonsDiv.innerHTML = "";
+      levels.forEach((_, idx) => {
+        const btn = document.createElement("button");
+        btn.textContent = `Bölüm ${idx + 1}`;
+        btn.className = "level-button";
+        btn.onclick = () => startLevel(idx);
+        levelButtonsDiv.appendChild(btn);
+      });
+      levelSelect.style.display = "block";
+    }
+
+    function startLevel(levelIndex) {
+      currentLevel = levelIndex;
+      currentQuestion = 0;
+      score = 0;
+      timeLeft = 90;
+      document.getElementById("level-select").style.display = "none";
+      document.getElementById("game-screen").style.display = "block";
+      document.getElementById("score").textContent = "Puan: 0";
+      document.getElementById("level").textContent = `Bölüm: ${currentLevel + 1}`;
+      startTimer();
+      loadNextQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const timerEl = document.getElementById("timer");
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = `Kalan Süre: ${timeLeft} saniye`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      const container = document.getElementById("question-container");
+      container.innerHTML = `<h3>Süre doldu! ⏰</h3><p>Toplam Puan: ${score}</p>`;
+      document.querySelector(".button").disabled = true;
+    }
+
+    function loadNextQuestion() {
+      const container = document.getElementById("question-container");
+      container.innerHTML = "";
+
+      const levelData = levels[currentLevel];
+      if (currentQuestion >= levelData.length) {
+        clearInterval(timerInterval);
+        container.innerHTML = `<h3>Bölüm ${currentLevel + 1} tamamlandı 🎉</h3><p>Toplam Puan: ${score}</p>`;
+        return;
+      }
+
+      const q = levelData[currentQuestion];
+      const questionEl = document.createElement("div");
+      questionEl.classList.add("question");
+
+      if (q.image) {
+        const img = document.createElement("img");
+        img.src = q.image;
+        img.alt = "Transport Image";
+        questionEl.appendChild(img);
+      }
+
+      questionEl.textContent = q.sentence;
+
+      const optionsDiv = document.createElement("div");
+      optionsDiv.classList.add("options");
+
+      q.options.forEach(option => {
+        const btn = document.createElement("div");
+        btn.classList.add("option");
+        btn.textContent = option;
+        btn.onclick = () => {
+          if (option === q.answer) {
+            btn.classList.add("correct");
+            score += 10;
+          } else {
+            btn.classList.add("incorrect");
+            score -= 5;
+          }
+          document.getElementById("score").textContent = "Puan: " + score;
+          Array.from(optionsDiv.children).forEach(child => child.onclick = null);
+        };
+        optionsDiv.appendChild(btn);
+      });
+
+      container.appendChild(questionEl);
+      container.appendChild(optionsDiv);
+      currentQuestion++;
+    }
+  </script>
+</body>
+</html>
